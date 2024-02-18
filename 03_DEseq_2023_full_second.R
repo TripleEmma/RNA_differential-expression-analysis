@@ -6,21 +6,24 @@ library(RColorBrewer)
 library(gplots)
 
 rm(list = ls())
-samples <- read.table("meta.txt", header = TRUE)
-samples$color <- factor(samples$color)
-samples$color <- relevel(samples$color, ref = "Brown")
 dirs <- list.files("second_batch/Trinity_full_salmon_quant/", "_quant")
 files <- file.path("second_batch/Trinity_full_salmon_quant", dirs, "quant.sf")
 names(files) <- dirs 
-
 ######### gene level
 tx2gene <- read_delim(file.path("second_batch/Trinity_full_salmon_quant/", "Trinity.fasta.gene_trans_map"),
                       col_names = FALSE) %>% 
     dplyr::select(X2, X1)
 names(tx2gene) <- c("transcript_IDs", "gene_IDs")
 txi.salmon.g <- tximport(files, type = "salmon", tx2gene=tx2gene)
+
+# meta information
+samples <- read.table("meta.txt", header = TRUE)
+samples$color <- factor(samples$color)
+samples$color <- relevel(samples$color, ref = "Brown")
+all(str_sub(dirs, end = 6) == str_sub(samples$individual, end = 6))
+
 dds_g <- DESeqDataSetFromTximport(txi.salmon.g, samples, ~color)
-keep <- rowSums( counts(dds_g) >= 10 ) >= 10 
+keep <- rowSums(counts(dds_g) >= 10 ) >= 10 
 dds_g <- dds_g[keep,]
 dds_g <- DESeq(dds_g)
 res_g <- results(dds_g, alpha = 0.05)
@@ -47,8 +50,9 @@ dev.off()
 
 LFC2up <- res_g[res_g$log2FoldChange > 2,]
 LFC2upOrdered <- LFC2up[order(desc(LFC2up$log2FoldChange), LFC2up$padj), ]
-# write.csv(as.data.frame(LFC2upOrdered), 
-#           file="LFC2upOrdered_results.csv")
+write.table(as.data.frame(LFC2upOrdered),
+          file="second_batch/trinity_full_LFC2upOrdered_results.txt",
+          sep = "\t")
 
 up_filters <- which(res_g@listData$padj<0.05 & res_g@listData$log2FoldChange > 0)
 up_df <- data.frame('trans'=res_g@rownames[up_filters], 
@@ -58,8 +62,9 @@ up_df
 
 LFC2down <- res_g[res_g$log2FoldChange < -2,]
 LFC2downOrdered <- LFC2down[order(LFC2down$log2FoldChange, LFC2down$padj), ]
-# write.csv(as.data.frame(LFC2downOrdered), 
-#           file="LFC2downOrdered_results.csv")
+write.table(as.data.frame(LFC2downOrdered),
+            file="second_batch/trinity_full_LFC2downOrdered_results.txt",
+            sep = "\t")
 
 down_filters <- which(res_g@listData$padj<0.05 & res_g@listData$log2FoldChange < 0)
 down_df <- data.frame('trans'=res_g@rownames[down_filters], 
