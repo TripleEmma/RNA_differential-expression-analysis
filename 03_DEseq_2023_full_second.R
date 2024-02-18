@@ -17,7 +17,7 @@ names(tx2gene) <- c("transcript_IDs", "gene_IDs")
 txi.salmon.g <- tximport(files, type = "salmon", tx2gene=tx2gene)
 
 # meta information
-samples <- read.table("meta.txt", header = TRUE)
+samples <- read.table("second_batch/meta.txt", header = TRUE)
 samples$color <- factor(samples$color)
 samples$color <- relevel(samples$color, ref = "Brown")
 all(str_sub(dirs, end = 6) == str_sub(samples$individual, end = 6))
