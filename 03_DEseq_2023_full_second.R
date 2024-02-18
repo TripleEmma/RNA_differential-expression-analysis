@@ -6,11 +6,11 @@ library(RColorBrewer)
 library(gplots)
 
 rm(list = ls())
-dirs <- list.files("second_batch/Trinity_full_salmon_quant/", "_quant")
-files <- file.path("second_batch/Trinity_full_salmon_quant", dirs, "quant.sf")
+dirs <- list.files("second_batch/second_batch_salmon_trinity_full/", "_quant")
+files <- file.path("second_batch/second_batch_salmon_trinity_full/", dirs, "quant.sf")
 names(files) <- dirs 
 ######### gene level
-tx2gene <- read_delim(file.path("second_batch/Trinity_full_salmon_quant/", "Trinity.fasta.gene_trans_map"),
+tx2gene <- read_delim(file.path("second_batch/second_batch_salmon_trinity_full/", "Trinity.fasta.gene_trans_map"),
                       col_names = FALSE) %>% 
     dplyr::select(X2, X1)
 names(tx2gene) <- c("transcript_IDs", "gene_IDs")
